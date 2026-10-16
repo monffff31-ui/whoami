@@ -43,6 +43,10 @@ function renderPanel(){
    panel.innerHTML=`<h3>คุณคือ ${me.status==='winner'?'🏆 WINNER':'💀 LOSER'}</h3><p>เฉลยของคุณเปิดเผยแล้ว · รอผู้เล่นที่เหลือเล่นให้จบ</p>${renderSecretReveal(me,'รูปและข้อความเฉลยของคุณ')}${current&&current.id!==session.pid?renderSecretReveal(current,`เฉลยของ ${current.name} ที่กำลังทาย`):''}${reply}${canGiveHint?hintButtons:''}`;
    return;
   }
+  if(active&&room.lastGuess&&!room.lastGuess.verdict&&room.lastGuess.isGuesser){
+   panel.innerHTML=`<h3>ส่งคำตอบแล้ว ✓</h3><p>คำตอบของคุณ: <b>${escapeHtml(room.lastGuess.guess)}</b></p><p>รอผู้เล่นคนอื่นกด <b>ถูก</b> หรือ <b>ผิด</b> ก่อนเริ่มตาถัดไป</p>`;
+   return;
+  }
   if(active){
    panel.innerHTML=`<h3>ตาของคุณแล้ว!</h3><p>ถามเพื่อนได้ 1 คำถาม จากนั้นรอคนใบ้ตอบ หรือกดผ่านเพื่อส่งตา</p>${reply}<div class="secret-hidden"><b>🔒 เฉลยถูกซ่อนไว้</b><p>ทั้งรูปและข้อความจะเปิดเผยหลังจากคุณส่งคำตอบ</p></div><div class="button-row"><button class="secondary" id="passTurn">ผ่าน →</button><button class="primary" id="openAnswer">ตอบคำตอบ</button></div>`;
    return;
