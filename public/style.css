@@ -123,3 +123,17 @@ body.modal-open{overflow:hidden}
 .vote-correct{background:#123f2e!important;border:1px solid #34d399!important;color:#6ee7b7!important}
 .vote-wrong{background:#491b26!important;border:1px solid #fb7185!important;color:#fda4af!important}
 .vote-row button:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+/* Vote modal: comfortable side-by-side controls on phones */
+@media(max-width:600px){
+ .modal-card .vote-summary{gap:8px;margin:12px 0}
+ .modal-card .vote-count{padding:11px 8px;font-size:14px}
+ .modal-card .vote-progress{font-size:13px;line-height:1.6}
+ .modal-card .vote-row{display:flex;flex-direction:row;gap:9px;width:100%}
+ .modal-card .vote-row button{display:flex;flex:1 1 0;align-items:center;justify-content:center;width:50%!important;min-width:0;min-height:54px;margin:0;padding:12px 8px;border-radius:13px;font-size:17px;white-space:nowrap}
+}
+@media(max-width:360px){
+ .modal-card .vote-row{gap:7px}
+ .modal-card .vote-row button{padding-inline:4px;font-size:16px}
+ .modal-card .guess-submitted{padding:14px 11px;font-size:20px!important}
+}
