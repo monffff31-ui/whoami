@@ -39,6 +39,7 @@ function publicRoom(room, pid) {
     players: room.players.map((player,index) => ({
       id: player.id === pid ? player.id : undefined,
       name: player.name,
+      avatar: player.avatar || '',
       isHost: player.id === room.hostId,
       secret: (player.id !== pid || !!player.status) && player.secret
         ? {text:player.secret.text,image:player.secret.image}
@@ -148,7 +149,7 @@ const server = http.createServer(async (req,res) => {
       const pid = crypto.randomUUID();
       const room = {
         code,maxPlayers,phase:'lobby',hostId:pid,
-        players:[{id:pid,name:String(data.name || 'ผู้เล่น 1').slice(0,20),secret:null,assigned:false,status:null,rank:null,ready:false}],
+        players:[{id:pid,name:String(data.name || 'ผู้เล่น 1').slice(0,20),avatar:'',secret:null,assigned:false,status:null,rank:null,ready:false}],
         turn:0,countdown:null,lastResults:null,lastReply:null,lastGuess:null
       };
       rooms.set(code,room);
@@ -160,13 +161,28 @@ const server = http.createServer(async (req,res) => {
       if (!room) return send(res,404,{error:'ไม่พบห้องนี้'});
       if (room.phase !== 'lobby' || room.players.length >= room.maxPlayers) return send(res,409,{error:'ห้องเต็มหรือเริ่มเกมแล้ว'});
       const pid = crypto.randomUUID();
-      room.players.push({id:pid,name:String(data.name || ('ผู้เล่น ' + (room.players.length + 1))).slice(0,20),secret:null,assigned:false,status:null,rank:null,ready:false});
+      room.players.push({id:pid,name:String(data.name || ('ผู้เล่น ' + (room.players.length + 1))).slice(0,20),avatar:'',secret:null,assigned:false,status:null,rank:null,ready:false});
       return send(res,200,{pid,room:publicRoom(room,pid)});
     }
 
     const room = rooms.get(data.code);
     const player = room?.players.find(item => item.id === data.pid);
     if (!room || !player) return send(res,404,{error:'ไม่พบห้องหรือผู้เล่น'});
+
+    if (url.pathname === '/api/profile') {
+      if (room.phase !== 'lobby') return send(res,409,{error:'แก้ไขโปรไฟล์ได้เฉพาะตอนอยู่ในล็อบบี้ก่อนเริ่มเกม'});
+      const name = String(data.name || '').trim().slice(0,20);
+      if (!name) return send(res,400,{error:'ใส่ชื่อผู้เล่นก่อน'});
+      if (data.avatar !== undefined) {
+        const avatar = String(data.avatar || '');
+        if (avatar && (avatar.length > 100000 || !/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(avatar))) {
+          return send(res,400,{error:'รูปโปรไฟล์ไม่ถูกต้องหรือมีขนาดใหญ่เกินไป'});
+        }
+        player.avatar = avatar;
+      }
+      player.name = name;
+      return send(res,200,{room:publicRoom(room,player.id)});
+    }
 
     if (url.pathname === '/api/ready') {
       if (!['lobby','countdown'].includes(room.phase)) return send(res,409,{error:'ตอนนี้ยังเปลี่ยนสถานะพร้อมไม่ได้'});
