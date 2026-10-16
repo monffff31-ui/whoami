@@ -111,3 +111,5 @@ body.modal-open{overflow:hidden}
 @media(max-width:600px){.ready-controls{width:100%;max-width:none}.ready-button{min-height:54px}.last-results{padding:15px 12px;margin-top:20px}.last-results h3{font-size:18px}}
 
 .secret-reveal{margin:12px 0;padding:12px;border:1px solid #a78bfa44;border-radius:14px;background:#a78bfa0a}.secret-reveal-label{font-size:12px!important;color:var(--muted)!important;margin:0 0 8px!important}.secret-reveal .secret-box{letter-spacing:normal;overflow-wrap:anywhere}.secret-hidden{padding:16px;border:1px dashed #a78bfa55;border-radius:14px;text-align:center;background:#a78bfa09;margin:14px 0}.secret-hidden b{color:var(--purple)}.secret-hidden p{font-size:12px;margin:7px 0 0}
+
+.guess-submitted{margin:14px 0 18px!important;padding:18px 16px;border:1px solid #a78bfa66;border-radius:14px;background:linear-gradient(135deg,#a78bfa18,#f472b610);color:var(--text)!important;font-size:clamp(19px,3vw,25px)!important;font-weight:700;line-height:1.5;overflow-wrap:anywhere;white-space:pre-wrap;}
