@@ -18,11 +18,18 @@ const getRanking = room => [...room.players]
 
 function publicRoom(room, pid) {
   const meIndex = room.players.findIndex(player => player.id === pid);
+  const guessVotes = room.lastGuess?.votes || {};
+  const guessVoteValues = Object.values(guessVotes);
   const lastGuess = room.lastGuess ? {
     id: room.lastGuess.id,
     by: room.lastGuess.by,
     guess: room.lastGuess.guess,
     isGuesser: room.lastGuess.pid === pid,
+    myVote: guessVotes[pid] || null,
+    votesCorrect: guessVoteValues.filter(value => value === 'correct').length,
+    votesWrong: guessVoteValues.filter(value => value === 'wrong').length,
+    votesCast: guessVoteValues.length,
+    votesNeeded: Math.max(0, room.players.length - 1),
     verdict: room.lastGuess.verdict || null
   } : null;
   return {
@@ -210,13 +217,26 @@ const server = http.createServer(async (req,res) => {
         if (!room.lastGuess || room.lastGuess.verdict) return send(res,409,{error:'ไม่มีคำตอบที่รอการตัดสิน'});
         if (room.lastGuess.pid === player.id) return send(res,409,{error:'คนทายห้ามตัดสินคำตอบของตัวเอง'});
         if (!['correct','wrong'].includes(data.verdict)) return send(res,400,{error:'เลือกถูกหรือผิดก่อน'});
-        room.lastGuess.verdict = data.verdict;
-        const guesser = room.players.find(item => item.id === room.lastGuess.pid);
-        if (guesser) {
-          guesser.status = data.verdict === 'correct' ? 'winner' : 'loser';
-          guesser.rank = room.players.filter(item => item.status).length;
+        if (!room.lastGuess.votes) room.lastGuess.votes = {};
+        if (Object.prototype.hasOwnProperty.call(room.lastGuess.votes,player.id)) {
+          return send(res,409,{error:'คุณโหวตคำตอบนี้ไปแล้ว'});
         }
-        nextTurn(room);
+        room.lastGuess.votes[player.id] = data.verdict;
+        const votes = Object.values(room.lastGuess.votes);
+        const votesNeeded = Math.max(0,room.players.length - 1);
+        if (votesNeeded > 0 && votes.length >= votesNeeded) {
+          const correctVotes = votes.filter(value => value === 'correct').length;
+          const wrongVotes = votes.filter(value => value === 'wrong').length;
+          // Require a strict majority for "correct"; ties count as wrong.
+          const finalVerdict = correctVotes > wrongVotes ? 'correct' : 'wrong';
+          room.lastGuess.verdict = finalVerdict;
+          const guesser = room.players.find(item => item.id === room.lastGuess.pid);
+          if (guesser) {
+            guesser.status = finalVerdict === 'correct' ? 'winner' : 'loser';
+            guesser.rank = room.players.filter(item => item.status).length;
+          }
+          nextTurn(room);
+        }
         return send(res,200,{room:publicRoom(room,player.id)});
       }
 
