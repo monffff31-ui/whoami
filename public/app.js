@@ -37,7 +37,7 @@ function renderPanel(){
  if(room.phase==='play'){
   const current=room.players[room.turn];
   const active=current?.id===session.pid;
-  const canGiveHint=!!me.canGiveHint;
+  const meIndex=room.players.findIndex(p=>p.id===session.pid);const canGiveHint=!!me.canGiveHint||(room.players.length>1&&meIndex===(room.turn-1+room.players.length)%room.players.length);
   const hintButtons=`<p class="muted">คุณเป็นคนใบ้ ตอบคำถามของคนถามได้ที่นี่</p><div class="reply-row button-row"><button class="secondary yes" data-reply="yes">ใช่</button><button class="secondary no" data-reply="no">ไม่ใช่</button><button class="secondary maybe" data-reply="maybe">อาจจะ</button></div>`;
   if(me.status){
    panel.innerHTML=`<h3>คุณคือ ${me.status==='winner'?'🏆 WINNER':'💀 LOSER'}</h3><p>เฉลยของคุณเปิดเผยแล้ว · รอผู้เล่นที่เหลือเล่นให้จบ</p>${renderSecretReveal(me,'รูปและข้อความเฉลยของคุณ')}${current&&current.id!==session.pid?renderSecretReveal(current,`เฉลยของ ${current.name} ที่กำลังทาย`):''}${reply}${canGiveHint?hintButtons:''}`;
